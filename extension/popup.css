@@ -1,0 +1,59 @@
+:root { color-scheme: light dark; font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; color: #17202a; background: #f4f6f8; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 280px; width: 400px; max-width: 100vw; }
+main { padding: 16px; }
+.open-tab { width: 100%; margin-top: 14px; color: #1267ad; font-weight: 600; }
+.integration { margin-top: 14px; font-size: .8rem; }
+.integration summary { cursor: pointer; font-weight: 700; }
+.integration h2 { font-size: .95rem; margin: 14px 0 8px; }
+.integration label { display: grid; gap: 4px; margin: 8px 0; }
+.integration input { width: 100%; min-width: 0; border: 1px solid #c4ced8; border-radius: 7px; padding: 8px; background: transparent; color: inherit; }
+.integration label.auto-sync { display: flex; align-items: center; }
+.integration .auto-sync input { width: auto; }
+#ai-result { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+.tab-view body { width: 100%; min-width: 0; max-width: none; }
+.tab-view main { max-width: 1120px; margin: 0 auto; padding: 32px 24px; }
+@media (min-width: 700px) {
+  .tab-view .controls { grid-template-columns: minmax(0, 1fr) 190px 160px; }
+  .tab-view .dates { grid-column: 1 / -1; }
+}
+@media (max-width: 480px) { .tab-view main { padding: 18px 16px; } }
+header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+h1 { margin: 0; font-size: 1.25rem; }
+.subtitle { color: #66717e; margin: 4px 0 0; font-size: .78rem; }
+.pause { display: flex; align-items: center; gap: 6px; font-size: .8rem; white-space: nowrap; }
+.pause input { accent-color: #1673c9; width: 18px; height: 18px; }
+.controls { display: grid; grid-template-columns: 1fr 130px; gap: 10px; margin-top: 16px; }
+label { font-size: .78rem; font-weight: 600; }
+.controls label { display: grid; gap: 4px; min-width: 0; }
+input, select, button { font: inherit; }
+input[type="search"], input[type="date"], input[type="number"], select { width: 100%; min-width: 0; border: 1px solid #c4ced8; border-radius: 7px; padding: 8px; background: #fff; color: inherit; }
+.dates { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+[hidden] { display: none !important; }
+.summary { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; margin: 14px 0 8px; color: #66717e; font-size: .75rem; }
+.actions, .confirmation { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+.confirmation { margin-top: 10px; font-size: .82rem; }
+button { border: 1px solid #c4ced8; border-radius: 7px; padding: 7px 10px; color: inherit; background: #fff; cursor: pointer; }
+button:disabled { opacity: .5; cursor: default; }
+button.danger { color: #b42318; }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid #1682e0; outline-offset: 2px; }
+#status { color: #b42318; font-size: .8rem; margin: 8px 0 0; }
+#status:empty { display: none; }
+#records { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 9px; }
+.record { border: 1px solid #dce2e8; border-radius: 9px; padding: 11px; background: #fff; overflow-wrap: anywhere; }
+.record-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.record-author { font-weight: 700; }
+.record-time { font-size: .75rem; color: #66717e; margin-top: 3px; }
+.record-text { white-space: pre-wrap; margin: 9px 0; font-size: .88rem; line-height: 1.4; }
+.record-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: .8rem; }
+a { color: #1267ad; }
+.empty { color: #66717e; text-align: center; font-size: .85rem; padding: 20px 0; }
+@media (max-width: 340px) { header { flex-wrap: wrap; } .controls { grid-template-columns: 1fr; } .dates { grid-column: auto; } }
+@media (prefers-color-scheme: dark) {
+  :root { color: #e8edf2; background: #14191e; }
+  .subtitle, .summary, .record-time, .empty { color: #a3aeb9; }
+  .record, button, input[type="search"], input[type="date"], input[type="number"], select { background: #222b33; border-color: #45515d; }
+  button.danger, #status { color: #ff928b; }
+  .open-tab { color: #84c6ff; }
+  a { color: #84c6ff; }
+}

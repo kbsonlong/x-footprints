@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>X Footprints</title>
+  <link rel="stylesheet" href="popup.css">
+  <script src="popup.js" defer></script>
+</head>
+<body>
+  <main>
+    <header>
+      <div><h1>X Footprints</h1><p class="subtitle">Your browsing history, on this device</p></div>
+      <label class="pause"><input id="paused" type="checkbox"><span>Pause collection</span></label>
+    </header>
+    <p id="status" role="status" aria-live="polite"></p>
+    <button id="open-tab" class="open-tab" type="button">在新标签页中管理 ↗</button>
+    <details class="integration">
+      <summary>同步与 AI 设置</summary>
+      <p>密钥保存在本浏览器的扩展本地存储中。同步会将记录上传到指定存储；AI 总结会将当前筛选的帖子发送给模型服务。</p>
+      <h2>S3 兼容存储</h2>
+      <label>Endpoint <input id="s3-endpoint" type="url" placeholder="https://account.r2.cloudflarestorage.com"></label>
+      <label>Bucket <input id="s3-bucket" type="text"></label>
+      <label>Region <input id="s3-region" type="text" placeholder="auto"></label>
+      <label>Object key <input id="s3-objectKey" type="text" placeholder="x-footprints/sync.json"></label>
+      <label>Access key ID <input id="s3-accessKey" type="text" autocomplete="off"></label>
+      <label>Secret access key <input id="s3-secretKey" type="password" autocomplete="new-password"></label>
+      <label class="auto-sync"><input id="s3-autoSync" type="checkbox"> 自动同步</label>
+      <p>变更后约 10 秒合并同步；打开管理界面时检查更新，后台每 15 分钟检查一次，失败后约 5 分钟重试。浏览器休眠时可能延后。</p>
+      <p id="sync-status" role="status"></p>
+      <div class="actions"><button id="save-s3" type="button">保存存储设置</button><button id="sync" type="button">立即同步</button></div>
+      <h2>AI 总结</h2>
+      <label>Chat completions URL <input id="ai-endpoint" type="url" placeholder="https://api.example.com/v1/chat/completions"></label>
+      <label>Model <input id="ai-model" type="text"></label>
+      <label>API key <input id="ai-apiKey" type="password" autocomplete="new-password"></label>
+      <div class="actions"><button id="save-ai" type="button">保存 AI 设置</button><button id="summarize" type="button">总结当前筛选</button></div>
+      <p>最多发送最近 100 条，每条正文最多 2000 字符。</p>
+      <pre id="ai-result" aria-live="polite"></pre>
+    </details>
+    <section class="controls" aria-label="Filter history">
+      <label>Search <input id="search" type="search" placeholder="Author or text" autocomplete="off"></label>
+      <label>Time period <select id="period"><option value="all">All time</option><option value="today">Today</option><option value="week">Last 7 days</option><option value="custom">Custom dates</option></select></label>
+      <label>Record limit <input id="limit" type="number" min="1" max="2000" step="1" value="2000"></label>
+      <div id="dates" class="dates" hidden>
+        <label>From <input id="from" type="date"></label>
+        <label>To <input id="to" type="date"></label>
+      </div>
+    </section>
+    <div class="summary"><span id="count"></span><span id="storage"></span></div>
+    <div class="actions">
+      <button id="export-json" type="button">Export JSON</button>
+      <button id="export-csv" type="button">Export CSV</button>
+      <button id="clear" class="danger" type="button">Clear all</button>
+    </div>
+    <div id="confirm-clear" class="confirmation" hidden><span>Delete all saved records?</span><button id="confirm-delete" class="danger" type="button">Delete all</button><button id="cancel-delete" type="button">Cancel</button></div>
+    <p id="empty" class="empty" hidden>No records match your filters.</p>
+    <ol id="records" aria-label="Saved records"></ol>
+  </main>
+</body>
+</html>

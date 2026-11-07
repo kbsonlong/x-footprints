@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>X Footprints</title>
+  <link rel="stylesheet" href="../extension/popup.css">
+  <script>window.browser={storage:{local:{get:async()=>({records:[{id:"1",author:"alice",text:"Swift tools",visitedAt:"2026-11-06T09:00:00Z",url:"https://x.com/alice/status/1"},{id:"2",author:"bob",text:"Python tips",visitedAt:"2026-11-05T09:00:00Z",url:"https://x.com/bob/status/2"}],settings:{paused:false,limit:2000}})},onChanged:{addListener(){}}},runtime:{getURL:p=>new URL('../extension/'+p,location.href).href,sendMessage:async()=>({ok:true,records:[],settings:{paused:false,limit:2000}})},tabs:{create:async options=>{window.lastCreatedTab=options;}}};</script><script src="../extension/popup.js" defer></script>
+</head>
+<body>
+  <main>
+    <header>
+      <div><h1>X Footprints</h1><p class="subtitle">Your browsing history, on this device</p></div>
+      <label class="pause"><input id="paused" type="checkbox"><span>Pause collection</span></label>
+    </header>
+    <p id="status" role="status" aria-live="polite"></p>
+    <button id="open-tab" class="open-tab" type="button">在新标签页中管理 ↗</button>
+    <section class="controls" aria-label="Filter history">
+      <label>Search <input id="search" type="search" placeholder="Author or text" autocomplete="off"></label>
+      <label>Time period <select id="period"><option value="all">All time</option><option value="today">Today</option><option value="week">Last 7 days</option><option value="custom">Custom dates</option></select></label>
+      <label>Record limit <input id="limit" type="number" min="1" max="2000" step="1" value="2000"></label>
+      <div id="dates" class="dates" hidden>
+        <label>From <input id="from" type="date"></label>
+        <label>To <input id="to" type="date"></label>
+      </div>
+    </section>
+    <div class="summary"><span id="count"></span><span id="storage"></span></div>
+    <div class="actions">
+      <button id="export-json" type="button">Export JSON</button>
+      <button id="export-csv" type="button">Export CSV</button>
+      <button id="clear" class="danger" type="button">Clear all</button>
+    </div>
+    <div id="confirm-clear" class="confirmation" hidden><span>Delete all saved records?</span><button id="confirm-delete" class="danger" type="button">Delete all</button><button id="cancel-delete" type="button">Cancel</button></div>
+    <p id="empty" class="empty" hidden>No records match your filters.</p>
+    <ol id="records" aria-label="Saved records"></ol>
+  </main>
+</body>
+</html>

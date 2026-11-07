@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "X Footprints",
+  "version": "1.0.0",
+  "description": "Keep a local history of X posts you visit.",
+  "minimum_chrome_version": "109",
+  "permissions": ["storage", "alarms"],
+  "host_permissions": ["https://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://x.com/*", "*://*.x.com/*", "*://twitter.com/*", "*://*.twitter.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_title": "X Footprints",
+    "default_popup": "popup.html"
+  }
+}

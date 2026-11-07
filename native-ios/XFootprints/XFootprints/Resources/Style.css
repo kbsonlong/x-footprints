@@ -1,0 +1,8 @@
+:root { color-scheme: light dark; font-family: -apple-system, system-ui, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: max(32px, env(safe-area-inset-top)) 24px max(32px, env(safe-area-inset-bottom)); line-height: 1.6; }
+main { max-width: 540px; margin: 0 auto; }
+h1 { font-size: 1.8rem; margin: 0 0 12px; }
+h2 { font-size: 1.15rem; margin-top: 28px; }
+li { margin: 12px 0; }
+.note { opacity: .72; font-size: .9rem; }

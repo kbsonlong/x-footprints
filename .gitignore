@@ -1,0 +1,7 @@
+build/
+build-ios/
+build-ios-device/
+build-ios-signed/
+.DS_Store
+*.xcuserstate
+xcuserdata/
