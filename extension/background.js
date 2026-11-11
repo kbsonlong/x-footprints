@@ -108,7 +108,7 @@ function mergeSync(state, remote) {
     else {
       const latest = String(record.visitedAt) > String(previous.visitedAt) ? record : previous;
       const older = latest === record ? previous : record;
-      records.set(record.id, { ...older, ...latest, text: latest.text || older.text, title: latest.title || older.title, author: latest.author || older.author, firstVisitedAt: [record.firstVisitedAt, previous.firstVisitedAt].filter(Boolean).sort()[0] });
+      records.set(record.id, { ...older, ...latest, text: latest.text || older.text, title: latest.title || older.title, author: latest.author || older.author, media: latest.media?.length ? latest.media : older.media, firstVisitedAt: [record.firstVisitedAt, previous.firstVisitedAt].filter(Boolean).sort()[0] });
     }
   }
   for (const [id, record] of records) if (tombstones[id] && tombstones[id] >= record.visitedAt) records.delete(id);
@@ -160,6 +160,21 @@ function cleanRecord(record) {
   for (const key of ['author', 'text', 'title']) {
     if (typeof record[key] === 'string') result[key] = record[key].slice(0, 10000);
   }
+  if (Array.isArray(record.media)) {
+    const seen = new Set();
+    result.media = record.media.slice(0, 8).flatMap(item => {
+      if (!item || !['image', 'video'].includes(item.type) || typeof item.url !== 'string') return [];
+      try {
+        const url = new URL(item.url);
+        if (url.protocol !== 'https:' || url.hostname.toLowerCase() !== 'pbs.twimg.com' ||
+            !/^\/(?:media|ext_tw_video_thumb|amplify_video_thumb|tweet_video_thumb)\//.test(url.pathname)) return [];
+        if (url.searchParams.has('name')) url.searchParams.set('name', 'large');
+        if (seen.has(url.href)) return [];
+        seen.add(url.href);
+        return [{ type: item.type, url: url.href }];
+      } catch (_) { return []; }
+    });
+  }
   if (typeof record.visitedAt === 'string' && Number.isFinite(Date.parse(record.visitedAt))) {
     result.visitedAt = record.visitedAt;
   } else if (typeof record.visitedAt === 'number' && Number.isFinite(record.visitedAt)) {
@@ -183,6 +198,7 @@ async function handle(message) {
       for (const key of ['author', 'text', 'title']) {
         if (!incoming[key] && previous[key]) delete incoming[key];
       }
+      if (!incoming.media?.length && previous.media?.length) delete incoming.media;
       const merged = { ...previous, ...incoming };
       if (!merged.visitedAt) merged.visitedAt = new Date().toISOString();
       merged.firstVisitedAt = previous.firstVisitedAt || previous.visitedAt || merged.visitedAt;

@@ -37,6 +37,27 @@
     return null;
   }
 
+  function extractMedia(article) {
+    if (typeof article.querySelectorAll !== 'function') return [];
+    const media = [];
+    const seen = new Set();
+    const add = (type, value) => {
+      if (!value || media.length >= 8) return;
+      try {
+        const url = new URL(value, location.href);
+        if (url.protocol !== 'https:' || url.hostname.toLowerCase() !== 'pbs.twimg.com' ||
+            !/^\/(?:media|ext_tw_video_thumb|amplify_video_thumb|tweet_video_thumb)\//.test(url.pathname)) return;
+        if (url.searchParams.has('name')) url.searchParams.set('name', 'large');
+        const href = url.href;
+        if (!seen.has(href)) { seen.add(href); media.push({ type, url: href }); }
+      } catch (_) { /* Ignore malformed or non-X media URLs. */ }
+    };
+
+    for (const video of article.querySelectorAll('video[poster]')) add('video', video.poster || video.getAttribute('poster'));
+    for (const image of article.querySelectorAll('img[src]')) add('image', image.currentSrc || image.src || image.getAttribute('src'));
+    return media;
+  }
+
   function extract(expectedGeneration) {
     extractionTimer = null;
     if (!visit || expectedGeneration !== generation) return;
@@ -49,7 +70,7 @@
     const user = article.querySelector('[data-testid="User-Name"]');
     const authorText = user ? (user.innerText || user.textContent || '').trim() : '';
     // Keep the URL-derived handle stable; display names may contain unrelated badges.
-    const record = { ...visit, text, title: document.title || '', author: visit.author };
+    const record = { ...visit, text, title: document.title || '', author: visit.author, media: extractMedia(article) };
     if (!text && !authorText) return;
     const signature = JSON.stringify(record);
     if (signature !== lastEnrichment) {

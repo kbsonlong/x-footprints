@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "Keep a local history of X posts you visit.",
   "permissions": ["storage", "alarms", "https://*/*"],
+  "content_security_policy": "script-src 'self'; object-src 'self'; img-src 'self' data: https://pbs.twimg.com",
   "background": {
     "scripts": ["background.js"],
     "persistent": false

@@ -33,7 +33,7 @@ $('summarize').addEventListener('click', async event => {
   try {
     setStatus('');
     const response = await api.runtime.sendMessage({ type: 'summarize', records: filteredRecords().slice(0, 100) });
-    if (!response?.ok) throw new Error(response?.error || 'No response from extension');
+    if (!response?.ok) throw new Error(response?.error || '扩展没有返回结果');
     $('ai-result').textContent = response.summary;
   } catch (error) { setStatus(`总结失败：${error.message || error}`); }
   finally { event.currentTarget.disabled = false; }
@@ -71,8 +71,8 @@ function filteredRecords() {
     if (to) { end = new Date(`${to}T00:00:00`); end.setDate(end.getDate() + 1); }
   }
   const invalidRange = $('period').value === 'custom' && $('from').value && $('to').value && $('from').value > $('to').value;
-  if (invalidRange) { setStatus('Start date must be on or before end date.'); return []; }
-  if ($('status').textContent === 'Start date must be on or before end date.') setStatus();
+  if (invalidRange) { setStatus('开始日期不能晚于结束日期。'); return []; }
+  if ($('status').textContent === '开始日期不能晚于结束日期。') setStatus();
   return records.filter(record => {
     const text = `${record.author || ''} ${record.text || ''}`.toLocaleLowerCase();
     const time = timeOf(record);
@@ -91,13 +91,21 @@ function safeUrl(value) {
   } catch (_) { /* Invalid URLs are displayed without a link. */ }
   return null;
 }
+function safeMediaUrl(value) {
+  try {
+    const url = new URL(value);
+    if (url.protocol === 'https:' && url.hostname.toLowerCase() === 'pbs.twimg.com' &&
+        /^\/(?:media|ext_tw_video_thumb|amplify_video_thumb|tweet_video_thumb)\//.test(url.pathname)) return url.href;
+  } catch (_) { /* Invalid media URLs are ignored. */ }
+  return null;
+}
 function render() {
   const shown = filteredRecords();
   $('paused').checked = settings.paused === true;
   $('limit').value = settings.limit;
   $('dates').hidden = $('period').value !== 'custom';
-  $('count').textContent = `${shown.length} shown · ${records.length} saved`;
-  $('storage').textContent = `Approx. ${formatBytes(new Blob([JSON.stringify({ records, settings })]).size)}`;
+  $('count').textContent = `已显示 ${shown.length} 条 · 共保存 ${records.length} 条`;
+  $('storage').textContent = `占用约 ${formatBytes(new Blob([JSON.stringify({ records, settings })]).size)}`;
   $('empty').hidden = shown.length > 0;
   $('clear').disabled = records.length === 0;
   $('export-json').disabled = shown.length === 0;
@@ -112,16 +120,41 @@ function render() {
     const details = document.createElement('div');
     const author = document.createElement('div');
     author.className = 'record-author';
-    author.textContent = record.author || 'Unknown author';
+    author.textContent = record.author || '未知作者';
     const date = document.createElement('div');
     date.className = 'record-time';
     const time = timeOf(record);
-    date.textContent = time ? new Date(time).toLocaleString() : 'Unknown date';
+    date.textContent = time ? new Date(time).toLocaleString('zh-CN') : '未知时间';
     details.append(author, date);
     header.append(details);
     const text = document.createElement('p');
     text.className = 'record-text';
-    text.textContent = Array.from(record.text || record.title || 'No text available').slice(0, 100).join('');
+    text.textContent = Array.from(record.text || record.title || '暂无正文').slice(0, 100).join('');
+    const media = document.createElement('div');
+    media.className = 'record-media';
+    for (const asset of Array.isArray(record.media) ? record.media.slice(0, 8) : []) {
+      if (!asset || !['image', 'video'].includes(asset.type) || !safeMediaUrl(asset.url)) continue;
+      const preview = document.createElement('a');
+      preview.className = `media-preview${asset.type === 'video' ? ' is-video' : ''}`;
+      preview.href = record.url;
+      preview.target = '_blank';
+      preview.rel = 'noopener noreferrer';
+      preview.setAttribute('aria-label', asset.type === 'video' ? '打开含视频的原帖' : '打开含图片的原帖');
+      const image = document.createElement('img');
+      image.src = asset.url;
+      image.alt = asset.type === 'video' ? '视频预览' : '帖子图片';
+      image.loading = 'lazy';
+      image.referrerPolicy = 'no-referrer';
+      preview.append(image);
+      if (asset.type === 'video') {
+        const play = document.createElement('span');
+        play.className = 'media-play';
+        play.setAttribute('aria-hidden', 'true');
+        play.textContent = '▶';
+        preview.append(play);
+      }
+      media.append(preview);
+    }
     const actions = document.createElement('div');
     actions.className = 'record-actions';
     const link = document.createElement('span');
@@ -131,17 +164,19 @@ function render() {
       anchor.href = url;
       anchor.target = '_blank';
       anchor.rel = 'noopener noreferrer';
-      anchor.textContent = 'Open post';
+      anchor.textContent = '查看原帖 ↗';
       link.append(anchor);
     }
     const remove = document.createElement('button');
     remove.type = 'button';
     remove.className = 'danger';
-    remove.textContent = 'Delete';
-    remove.setAttribute('aria-label', `Delete record by ${record.author || 'unknown author'}`);
+    remove.textContent = '删除';
+    remove.setAttribute('aria-label', `删除 ${record.author || '未知作者'} 的记录`);
     remove.addEventListener('click', () => mutate({ type: 'delete', id: record.id }));
     actions.append(link, remove);
-    item.append(header, text, actions);
+    item.append(header, text);
+    if (media.childElementCount) item.append(media);
+    item.append(actions);
     list.append(item);
   }
 }
@@ -184,7 +219,7 @@ for (const id of ['period', 'from', 'to']) $(id).addEventListener('change', rend
 $('paused').addEventListener('change', event => mutate({ type: 'settings', settings: { paused: event.target.checked } }));
 $('limit').addEventListener('change', event => {
   const limit = Number(event.target.value);
-  if (!Number.isInteger(limit) || limit < 1 || limit > 2000) { setStatus('Record limit must be between 1 and 2000.'); render(); return; }
+  if (!Number.isInteger(limit) || limit < 1 || limit > 2000) { setStatus('记录上限需设置为 1 到 2000 之间的整数。'); render(); return; }
   mutate({ type: 'settings', settings: { limit } });
 });
 $('clear').addEventListener('click', () => { $('confirm-clear').hidden = false; });
